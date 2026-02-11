@@ -1,0 +1,1019 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.10/index.global.min.js"></script>
+
+<style>
+    :root {
+        --primary-dark: #0a0e27;
+        --secondary-dark: #1a1f3a;
+        --accent-blue: #0d8fd1;
+        --accent-green: #00d4aa;
+        --accent-yellow: #ffb800;
+        --accent-red: #ff4757;
+        --text-light: #e8eef5;
+        --text-muted: #7f8ba4;
+        --border-color: #2d3454;
+    }
+
+    .calendario-container {
+        display: flex;
+        gap: 25px;
+        padding: 20px;
+        height: calc(100vh - 80px);
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Panel de Especialistas */
+    .especialistas-panel {
+        width: 320px;
+        background: linear-gradient(135deg, rgba(26, 31, 58, 0.9), rgba(45, 52, 84, 0.7));
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .especialistas-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--accent-blue);
+    }
+
+    .especialistas-header h3 {
+        margin: 0;
+        color: var(--text-light);
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .especialistas-header i {
+        color: var(--accent-green);
+        font-size: 1.3rem;
+    }
+
+    .drag-hint {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: 18px;
+        font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .drag-hint i {
+        color: var(--accent-yellow);
+    }
+
+    .horario-group {
+        margin-bottom: 22px;
+    }
+
+    .horario-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-light);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    #horario-selector {
+        width: 100%;
+        padding: 10px 12px;
+        background: rgba(45, 52, 84, 0.6);
+        border: 1.5px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-light);
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.15s ease;
+        cursor: pointer;
+    }
+
+    #horario-selector:hover,
+    #horario-selector:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+        background: rgba(45, 52, 84, 0.8);
+        box-shadow: 0 0 8px rgba(13, 143, 209, 0.2);
+    }
+
+    #horario-selector option {
+        background: var(--secondary-dark);
+        color: var(--text-light);
+    }
+
+    .especialistas-list-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--accent-green);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 18px 0 12px 0;
+        display: block;
+    }
+
+    #external-events {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex: 1;
+    }
+
+    /* Estilos de eventos draggables */
+    .fc-event {
+        cursor: grab;
+        padding: 12px;
+        border-radius: 6px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.15s ease;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-align: center;
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 65px;
+    }
+
+    .fc-event:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 4px 12px rgba(0, 212, 170, 0.2);
+    }
+
+    .fc-event:active {
+        cursor: grabbing;
+    }
+
+    .especialista-area {
+        font-size: 0.75rem;
+        opacity: 0.9;
+        font-weight: 600;
+        display: block;
+        width: 100%;
+        color: inherit;
+        text-align: center;
+        word-break: break-word;
+        margin-top: 4px;
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, rgba(13, 143, 209, 0.15), rgba(0, 212, 170, 0.1));
+        border-left: 3px solid var(--accent-blue);
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: auto;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+    }
+
+    .info-box i {
+        color: var(--accent-blue);
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    /* Calendario principal */
+    .calendario-main {
+        flex: 1;
+        background: linear-gradient(135deg, rgba(26, 31, 58, 0.6), rgba(45, 52, 84, 0.4));
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .calendario-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--accent-green);
+    }
+
+    .calendario-title h2 {
+        margin: 0;
+        color: var(--text-light);
+        font-weight: 700;
+        font-size: 1.3rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .calendario-title i {
+        color: var(--accent-blue);
+        font-size: 1.5rem;
+    }
+
+    #calendar {
+        flex: 1;
+        background: linear-gradient(135deg, rgba(10, 14, 39, 0.5), rgba(26, 31, 58, 0.5));
+        border-radius: 8px;
+        padding: 15px;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    /* Estilos de FullCalendar */
+    .fc {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        height: 100%;
+    }
+
+    .fc .fc-button-primary {
+        background-color: var(--accent-blue);
+        border-color: var(--accent-blue);
+        font-weight: 600;
+        transition: all 0.15s ease;
+    }
+
+    .fc .fc-button-primary:hover {
+        background-color: var(--accent-green);
+        border-color: var(--accent-green);
+        box-shadow: 0 0 12px rgba(0, 212, 170, 0.3);
+    }
+
+    .fc .fc-button-primary.fc-button-active {
+        background-color: var(--accent-green);
+        border-color: var(--accent-green);
+    }
+
+    .fc .fc-button-primary:not(:disabled):active {
+        background-color: var(--accent-yellow);
+        border-color: var(--accent-yellow);
+    }
+
+    .fc-col-header-cell {
+        background: linear-gradient(135deg, rgba(13, 143, 209, 0.2), rgba(0, 212, 170, 0.1));
+        color: var(--accent-green);
+        font-weight: 700;
+        border-color: var(--border-color);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.85rem;
+    }
+
+    .fc-daygrid-day {
+        background: rgba(26, 31, 58, 0.3);
+        border-color: var(--border-color);
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+
+    .fc-daygrid-day:hover {
+        background: rgba(26, 31, 58, 0.5);
+    }
+
+    .fc-daygrid-day-number {
+        color: var(--text-light);
+        font-weight: 600;
+        padding: 8px;
+    }
+
+    .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+        color: var(--text-muted);
+    }
+
+    .fc-daygrid-day.fc-day-today {
+        background: linear-gradient(135deg, rgba(13, 143, 209, 0.15), rgba(0, 212, 170, 0.1));
+        border: 1px solid var(--accent-blue);
+    }
+
+    /* Indicador de eventos en el día */
+    .day-has-events {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: linear-gradient(135deg, rgba(13, 143, 209, 0.2), rgba(0, 212, 170, 0.1));
+        border: 1px solid var(--accent-blue);
+        border-radius: 4px;
+        padding: 6px 10px;
+        color: var(--accent-green);
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 6px auto 0;
+        max-width: 90%;
+    }
+
+    .day-has-events:hover {
+        background: linear-gradient(135deg, rgba(13, 143, 209, 0.3), rgba(0, 212, 170, 0.2));
+        border-color: var(--accent-green);
+        box-shadow: 0 2px 8px rgba(0, 212, 170, 0.2);
+        transform: translateY(-1px);
+    }
+
+    .day-has-events i {
+        font-size: 0.9rem;
+    }
+
+    /* Modal de Día */
+    .day-modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 999;
+        backdrop-filter: blur(4px);
+    }
+
+    .day-modal-overlay.active {
+        display: block;
+    }
+
+    .day-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, rgba(26, 31, 58, 0.98), rgba(45, 52, 84, 0.95));
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        max-height: 80vh;
+        overflow-y: auto;
+        min-width: 400px;
+        max-width: 90vw;
+    }
+
+    .day-modal.active {
+        display: block;
+        animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes modalSlideIn {
+        from {
+            transform: translate(-50%, -50%) scale(0.95);
+            opacity: 0;
+        }
+        to {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .day-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--accent-green);
+    }
+
+    .day-modal-header h2 {
+        margin: 0;
+        color: var(--text-light);
+        font-weight: 700;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .day-modal-header i {
+        color: var(--accent-green);
+        font-size: 1.3rem;
+    }
+
+    .day-modal-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+
+    .day-modal-close:hover {
+        color: var(--accent-red);
+        background: rgba(255, 71, 87, 0.1);
+    }
+
+    .day-modal-events {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .day-modal-event-item {
+        padding: 14px 16px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .day-modal-event-item:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+        transform: translateX(4px);
+    }
+
+    .day-modal-event-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+    }
+
+    .day-modal-event-nombre {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .day-modal-event-horario {
+        font-size: 0.8rem;
+        opacity: 0.9;
+    }
+
+    .day-modal-event-delete {
+        background: var(--accent-red);
+        border: none;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .day-modal-event-delete:hover {
+        background: #ff3838;
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+    }
+
+    .no-events-message {
+        color: var(--text-muted);
+        text-align: center;
+        padding: 30px 20px;
+        font-style: italic;
+    }
+
+    /* Scrollbars personalizados */
+    .especialistas-panel::-webkit-scrollbar,
+    .day-modal::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .especialistas-panel::-webkit-scrollbar-track,
+    .day-modal::-webkit-scrollbar-track {
+        background: rgba(45, 52, 84, 0.3);
+        border-radius: 10px;
+    }
+
+    .especialistas-panel::-webkit-scrollbar-thumb,
+    .day-modal::-webkit-scrollbar-thumb {
+        background: var(--accent-blue);
+        border-radius: 10px;
+    }
+
+    .especialistas-panel::-webkit-scrollbar-thumb:hover,
+    .day-modal::-webkit-scrollbar-thumb:hover {
+        background: var(--accent-green);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .calendario-container {
+            flex-direction: column;
+            height: auto;
+        }
+
+        .especialistas-panel {
+            width: 100%;
+            max-height: 300px;
+        }
+
+        .calendario-main {
+            min-height: 600px;
+        }
+    }
+</style>
+
+<div class="calendario-container">
+    <div class="especialistas-panel">
+        <div class="especialistas-header">
+            <i class="fas fa-users"></i>
+            <h3>Especialistas</h3>
+        </div>
+        
+        <p class="drag-hint">
+            <i class="fas fa-hand-pointer"></i> Arrastra a los días
+        </p>
+        
+        <div class="horario-group">
+            <label class="horario-label" for="horario-selector">
+                <i class="fas fa-clock"></i> Seleccionar Turno
+            </label>
+            <select id="horario-selector">
+                <option value="07:00-16:00">Turno A (07:00 - 16:00)</option>
+                <option value="09:00-18:00">Turno B (09:00 - 18:00)</option>
+                <option value="17:00-23:59">Turno C (17:00 - 23:59)</option>
+                <option value="12:00-06:59">Turno D (00:00 - 06:59)</option>
+            </select>
+        </div>
+
+        <span class="especialistas-list-label">Disponibles</span>
+        <div id="external-events">
+            {% for esp in especialistas %}
+            <div class="fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event"
+                 data-id="{{ esp.id }}"
+                 data-nombre="{{ esp.nombre }}"
+                 data-area="{{ esp.area }}"
+                 data-color="{{ esp.color }}"
+                 style="background-color: {{ esp.color }};">
+                <div class="fc-event-main">{{ esp.nombre }}</div>
+                <div class="especialista-area">{{ esp.area }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="info-box">
+            <i class="fas fa-info-circle"></i>
+            <span>Usa Admin para agregar especialistas</span>
+        </div>
+    </div>
+
+    <div class="calendario-main">
+        <div class="calendario-title">
+            <i class="fas fa-calendar-alt"></i>
+            <h2>Calendario de Turnos</h2>
+        </div>
+        <div id='calendar'></div>
+    </div>
+</div>
+
+<!-- Modal de Día -->
+<div class="day-modal-overlay" id="day-modal-overlay"></div>
+<div class="day-modal" id="day-modal">
+    <div class="day-modal-header">
+        <h2>
+            <i class="fas fa-tasks"></i>
+            <span id="day-modal-date"></span>
+        </h2>
+        <button class="day-modal-close" id="close-day-modal" aria-label="Cerrar modal">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div class="day-modal-events" id="day-modal-events"></div>
+</div>
+
+<script>
+(function() {
+    'use strict';
+    
+    // Constantes de configuración
+    const SEPARADOR_EVENTO = '|';
+    const API_ENDPOINTS = {
+        eventos: '/calendario/api/eventos/',
+        guardar: '/calendario/api/guardar/',
+        eliminar: '/calendario/api/eliminar/'
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const Calendar = FullCalendar.Calendar;
+        const Draggable = FullCalendar.Draggable;
+
+        const containerEl = document.getElementById('external-events');
+        const calendarEl = document.getElementById('calendar');
+        const horarioSelector = document.getElementById('horario-selector');
+
+        // Elementos del modal
+        const dayModalOverlay = document.getElementById('day-modal-overlay');
+        const dayModal = document.getElementById('day-modal');
+        const dayModalDate = document.getElementById('day-modal-date');
+        const dayModalEvents = document.getElementById('day-modal-events');
+        const closeDayModalBtn = document.getElementById('close-day-modal');
+
+        // Utilidades
+        const utils = {
+            formatDate: function(dateStr) {
+                const date = new Date(dateStr + 'T12:00:00');
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                };
+                return date.toLocaleDateString('es-ES', options);
+            },
+
+            parseEventTitle: function(title) {
+                // Soporta ambos formatos: "nombre|area|horario" y "nombre (horario)"
+                if (title.includes(SEPARADOR_EVENTO)) {
+                    // Nuevo formato: nombre|area|horario
+                    const parts = title.split(SEPARADOR_EVENTO);
+                    return {
+                        nombre: parts[0] || '',
+                        area: parts[1] || 'Sin área',
+                        horario: parts[2] || 'Sin horario'
+                    };
+                } else {
+                    // Formato antiguo: nombre (horario)
+                    const match = title.match(/^(.+?)\s*\(([^)]+)\)$/);
+                    if (match) {
+                        return {
+                            nombre: match[1] || '',
+                            area: 'Sin área',
+                            horario: match[2] || 'Sin horario'
+                        };
+                    }
+                    // Si no coincide con ningún formato
+                    return {
+                        nombre: title || '',
+                        area: 'Sin área',
+                        horario: 'Sin horario'
+                    };
+                }
+            },
+
+            createEventTitle: function(nombre, area, horarioTexto) {
+                // Validar y sanitizar los valores
+                const nombreSafe = (nombre || '').trim();
+                const areaSafe = (area || 'Sin área').trim();
+                const horarioSafe = (horarioTexto || 'Sin horario').trim();
+                
+                const titulo = [nombreSafe, areaSafe, horarioSafe].join(SEPARADOR_EVENTO);
+                console.log('Evento creado:', titulo); // Para debugging
+                return titulo;
+            },
+
+            showError: function(message) {
+                alert('Error: ' + message);
+                console.error(message);
+            },
+
+            confirmAction: function(message) {
+                return confirm(message);
+            }
+        };
+
+        // Gestión de API
+        const api = {
+            eliminarEvento: async function(eventId) {
+                try {
+                    const response = await fetch(API_ENDPOINTS.eliminar, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: eventId })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+
+                    return data;
+                } catch (error) {
+                    console.error('Error al eliminar evento:', error);
+                    throw error;
+                }
+            },
+
+            guardarEvento: async function(especialistaId, fecha, horario) {
+                try {
+                    const response = await fetch(API_ENDPOINTS.guardar, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            especialista_id: especialistaId,
+                            fecha: fecha,
+                            horario: horario
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor');
+                    }
+
+                    return data;
+                } catch (error) {
+                    console.error('Error al guardar evento:', error);
+                    throw error;
+                }
+            }
+        };
+
+        // Gestión del modal
+        const modal = {
+            open: function(dateStr, events) {
+                const formattedDate = utils.formatDate(dateStr);
+                dayModalDate.textContent = formattedDate;
+                dayModalEvents.innerHTML = '';
+
+                if (!events || events.length === 0) {
+                    dayModalEvents.innerHTML = '<p class="no-events-message">Sin especialistas asignados</p>';
+                } else {
+                    events.forEach(event => {
+                        const eventEl = this.createEventElement(event);
+                        dayModalEvents.appendChild(eventEl);
+                    });
+                }
+
+                dayModalOverlay.classList.add('active');
+                dayModal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            },
+
+            close: function() {
+                dayModalOverlay.classList.remove('active');
+                dayModal.classList.remove('active');
+                document.body.style.overflow = '';
+            },
+
+            createEventElement: function(event) {
+                const eventData = utils.parseEventTitle(event.title);
+                
+                const eventItem = document.createElement('div');
+                eventItem.className = 'day-modal-event-item';
+                eventItem.style.backgroundColor = event.backgroundColor || event.color || 'var(--accent-green)';
+                
+                eventItem.innerHTML = `
+                    <div class="day-modal-event-info">
+                        <div class="day-modal-event-nombre">${eventData.nombre}</div>
+                        <div class="day-modal-event-horario"><strong>Área:</strong> ${eventData.area}</div>
+                        <div class="day-modal-event-horario"><strong>Horario:</strong> ${eventData.horario}</div>
+                    </div>
+                    <button class="day-modal-event-delete" data-event-id="${event.id}" type="button">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                `;
+                
+                const deleteBtn = eventItem.querySelector('.day-modal-event-delete');
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleDeleteEvent(event.id, eventData.nombre);
+                });
+                
+                return eventItem;
+            },
+
+            handleDeleteEvent: async function(eventId, nombreEspecialista) {
+                if (!utils.confirmAction(`¿Eliminar turno de ${nombreEspecialista}?`)) {
+                    return;
+                }
+
+                try {
+                    const data = await api.eliminarEvento(eventId);
+                    
+                    if (data.status === 'success') {
+                        calendar.refetchEvents();
+                        this.close();
+                    } else {
+                        utils.showError('No se pudo eliminar el evento');
+                    }
+                } catch (error) {
+                    utils.showError('Error al eliminar el evento');
+                }
+            }
+        };
+
+        // Event listeners del modal
+        closeDayModalBtn.addEventListener('click', () => modal.close());
+        dayModalOverlay.addEventListener('click', () => modal.close());
+
+        // Prevenir cierre al hacer click dentro del modal
+        dayModal.addEventListener('click', (e) => e.stopPropagation());
+
+        // Hacer draggables los elementos del sidebar
+        new Draggable(containerEl, {
+            itemSelector: '.fc-event',
+            eventData: function(eventEl) {
+                const nombre = eventEl.getAttribute('data-nombre') || '';
+                const area = eventEl.getAttribute('data-area') || 'Sin área';
+                const horario = horarioSelector.value || '07:00-16:00';
+                const horarioTexto = horarioSelector.options[horarioSelector.selectedIndex].text || 'Turno A (07:00 - 16:00)';
+                
+                console.log('Arrastrando:', { nombre, area, horarioTexto }); // Para debugging
+                
+                return {
+                    title: utils.createEventTitle(nombre, area, horarioTexto),
+                    backgroundColor: eventEl.getAttribute('data-color') || '#3788d8',
+                    borderColor: eventEl.getAttribute('data-color') || '#3788d8',
+                    create: false
+                };
+            }
+        });
+
+        // Gestión de indicadores de días
+        const dayIndicators = {
+            update: function(dateStr, count) {
+                const dayCell = calendarEl.querySelector(`.fc-daygrid-day[data-date="${dateStr}"]`);
+                if (!dayCell) return;
+
+                const eventsContainer = dayCell.querySelector('.fc-daygrid-day-events');
+                if (!eventsContainer) return;
+
+                let indicator = eventsContainer.querySelector('.day-has-events');
+
+                if (count === 0) {
+                    if (indicator) indicator.remove();
+                    return;
+                }
+
+                if (!indicator) {
+                    indicator = this.create(dateStr, count);
+                    eventsContainer.appendChild(indicator);
+                } else {
+                    this.updateText(indicator, count);
+                }
+            },
+
+            create: function(dateStr, count) {
+                const indicator = document.createElement('div');
+                indicator.className = 'day-has-events';
+                this.updateText(indicator, count);
+                
+                indicator.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const dayEvents = this.getEventsForDate(dateStr);
+                    modal.open(dateStr, dayEvents);
+                });
+
+                return indicator;
+            },
+
+            updateText: function(indicator, count) {
+                const text = count === 1 ? '1 Especialista' : `${count} Especialistas`;
+                indicator.innerHTML = `<i class="fas fa-users"></i> ${text}`;
+            },
+
+            getEventsForDate: function(dateStr) {
+                return calendar.getEvents().filter(event => {
+                    const eventDate = event.start.toISOString().split('T')[0];
+                    return eventDate === dateStr;
+                });
+            },
+
+            refreshAll: function() {
+                const allDays = calendarEl.querySelectorAll('.fc-daygrid-day[data-date]');
+                allDays.forEach(dayCell => {
+                    const dateStr = dayCell.getAttribute('data-date');
+                    const events = this.getEventsForDate(dateStr);
+                    this.update(dateStr, events.length);
+                });
+            }
+        };
+
+        // Inicializar calendario
+        const calendar = new Calendar(calendarEl, {
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek'
+            },
+            locale: 'es',
+            editable: true,
+            droppable: true,
+            events: API_ENDPOINTS.eventos,
+            eventBackgroundColor: 'var(--accent-green)',
+            eventBorderColor: 'rgba(255, 255, 255, 0.3)',
+            height: '100%',
+
+            eventDidMount: function(info) {
+                // Ocultar el evento visual en el calendario
+                info.el.style.display = 'none';
+            },
+
+            eventAdd: function(info) {
+                const dateStr = info.event.start.toISOString().split('T')[0];
+                const events = dayIndicators.getEventsForDate(dateStr);
+                dayIndicators.update(dateStr, events.length);
+            },
+
+            eventRemove: function(info) {
+                const dateStr = info.event.start.toISOString().split('T')[0];
+                setTimeout(() => {
+                    const events = dayIndicators.getEventsForDate(dateStr);
+                    dayIndicators.update(dateStr, events.length);
+                }, 100);
+            },
+
+            eventsSet: function() {
+                setTimeout(() => dayIndicators.refreshAll(), 100);
+            },
+
+            datesSet: function() {
+                setTimeout(() => dayIndicators.refreshAll(), 100);
+            },
+
+            dateClick: function(info) {
+                const dayEvents = dayIndicators.getEventsForDate(info.dateStr);
+                modal.open(info.dateStr, dayEvents);
+            },
+
+            drop: async function(info) {
+                const eventEl = info.draggedEl;
+                const especialistaId = eventEl.getAttribute('data-id');
+                const fecha = info.dateStr;
+                const horario = horarioSelector.value;
+
+                try {
+                    const data = await api.guardarEvento(especialistaId, fecha, horario);
+                    
+                    if (data.status === 'success') {
+                        calendar.refetchEvents();
+                    } else {
+                        utils.showError('No se pudo guardar el evento');
+                    }
+                } catch (error) {
+                    utils.showError('Error al guardar el evento');
+                }
+            },
+
+            eventDrop: function(info) {
+                // Prevenir arrastrar eventos ya colocados
+                info.revert();
+                utils.showError('Para mover un evento, elimínalo y vuelve a agregarlo');
+            }
+        });
+
+        calendar.render();
+
+        // Ajustar tamaño del calendario al cambiar sidebar
+        const handleSidebarToggle = () => {
+            setTimeout(() => calendar.updateSize(), 400);
+        };
+
+        // Verificar si el sidebar está colapsado al cargar
+        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (sidebarCollapsed) {
+            handleSidebarToggle();
+        }
+
+        // Listener para el toggle del sidebar
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', handleSidebarToggle);
+        }
+
+        // Ajustar al cambiar tamaño de ventana
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => calendar.updateSize(), 250);
+        });
+    });
+})();
+</script>
+{% endblock %}

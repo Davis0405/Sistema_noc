@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NOC MICOOPE{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* =====================================
+           VARIABLES GLOBALES CSS
+        ===================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Colores Principales */
+            --primary-dark: #0a0e27;
+            --secondary-dark: #1a1f3a;
+            --tertiary-dark: #2d3454;
+            
+            /* Colores de Acento */
+            --accent-blue: #0d8fd1;
+            --accent-green: #00d4aa;
+            --accent-yellow: #ffb800;
+            --accent-red: #ff4757;
+            --accent-purple: #a55eea;
+            --accent-orange: #ff6348;
+            
+            /* Colores de Texto */
+            --text-light: #e8eef5;
+            --text-muted: #7f8ba4;
+            --text-dark: #2c3e50;
+            
+            /* Colores de Borde */
+            --border-color: #2d3454;
+            --border-light: #3d4564;
+            
+            /* Fondos */
+            --bg-primary: #0a0e27;
+            --bg-secondary: #1a1f3a;
+            --bg-card: rgba(26, 31, 58, 0.9);
+            --bg-hover: rgba(45, 52, 84, 0.7);
+            
+            /* Sombras */
+            --shadow-sm: 0 0 10px rgba(13, 143, 209, 0.1);
+            --shadow-md: 0 0 20px rgba(13, 143, 209, 0.15);
+            --shadow-lg: 0 10px 30px rgba(13, 143, 209, 0.3);
+            --shadow-blue: 0 0 20px rgba(13, 143, 209, 0.5);
+            --shadow-green: 0 0 20px rgba(0, 212, 170, 0.5);
+            --shadow-red: 0 0 20px rgba(255, 71, 87, 0.5);
+            
+            /* Espaciados */
+            --spacing-xs: 5px;
+            --spacing-sm: 10px;
+            --spacing-md: 20px;
+            --spacing-lg: 30px;
+            --spacing-xl: 40px;
+            
+            /* Bordes Redondeados */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 12px;
+            --radius-xl: 20px;
+            
+            /* Transiciones */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+            --transition-cubic: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Sidebar */
+            --sidebar-width: 260px;
+            --sidebar-collapsed: 80px;
+        }
+
+        /* =====================================
+           BASE STYLES
+        ===================================== */
+        html, body {
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+            color: var(--text-light);
+            overflow: hidden;
+        }
+
+        /* =====================================
+           LAYOUT CONTAINER
+        ===================================== */
+        .noc-container {
+            display: flex;
+            height: 100vh;
+            transition: all var(--transition-cubic);
+        }
+
+        /* =====================================
+           SIDEBAR STYLES
+        ===================================== */
+        .noc-sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--secondary-dark) 0%, var(--primary-dark) 100%);
+            border-right: 2px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow-y: auto;
+            transition: all var(--transition-cubic);
+        }
+
+        .noc-sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+        }
+
+        .noc-sidebar.collapsed .noc-logo span,
+        .noc-sidebar.collapsed .noc-nav a span,
+        .noc-sidebar.collapsed .nav-section-title,
+        .noc-sidebar.collapsed .user-details,
+        .noc-sidebar.collapsed .logout-btn {
+            display: none;
+        }
+
+        .noc-sidebar.collapsed .noc-logo h2 {
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .noc-sidebar.collapsed .noc-nav a {
+            justify-content: center;
+            padding: 12px 0;
+            border-left: 3px solid transparent;
+        }
+
+        .noc-sidebar.collapsed .noc-nav a i {
+            font-size: 1.3rem;
+        }
+
+        .noc-sidebar.collapsed .user-info {
+            justify-content: center;
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .noc-sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+        }
+
+        /* Toggle Button */
+        .toggle-sidebar-btn {
+            position: absolute;
+            top: 25px;
+            right: 15px;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            transition: all var(--transition-normal);
+            box-shadow: 0 4px 15px rgba(13, 143, 209, 0.3);
+            z-index: 100;
+        }
+
+        .toggle-sidebar-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(13, 143, 209, 0.5);
+        }
+
+        .toggle-sidebar-btn:active {
+            transform: scale(0.95);
+        }
+
+        .noc-sidebar.collapsed .toggle-sidebar-btn {
+            right: 22px;
+        }
+
+        /* Logo Section */
+        .noc-logo {
+            padding: 25px 55px 25px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .noc-logo::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20px;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), transparent);
+        }
+
+        .noc-logo h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .noc-logo i {
+            color: var(--accent-blue);
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            margin-left: 20px;
+            margin-bottom: 15px;
+            font-size: 0.8rem;
+            color: var(--accent-green);
+            transition: all var(--transition-normal);
+        }
+
+        .noc-sidebar.collapsed .status-indicator {
+            justify-content: center;
+            margin-left: 0;
+            font-size: 0;
+        }
+
+        .noc-sidebar.collapsed .status-indicator span {
+            display: none;
+        }
+
+        .noc-sidebar.collapsed .status-indicator .status-dot {
+            width: 12px;
+            height: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Navigation */
+        .noc-nav {
+            flex: 1;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-section-title {
+            padding: 10px 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        .noc-nav a {
+            padding: 12px 20px;
+            color: var(--text-light);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all var(--transition-normal);
+            border-left: 3px solid transparent;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .noc-nav a i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+            transition: all var(--transition-normal);
+        }
+
+        .noc-nav a:hover {
+            background-color: rgba(13, 143, 209, 0.1);
+            border-left-color: var(--accent-blue);
+            padding-left: 25px;
+        }
+
+        .noc-nav a.active {
+            background-color: rgba(13, 143, 209, 0.2);
+            border-left-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .noc-nav a.active i {
+            color: var(--accent-blue);
+            text-shadow: 0 0 10px rgba(13, 143, 209, 0.5);
+        }
+
+        /* User Section */
+        .noc-user-section {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+            background: linear-gradient(180deg, transparent, rgba(13, 143, 209, 0.05));
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all var(--transition-normal);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 10px rgba(13, 143, 209, 0.3);
+            flex-shrink: 0;
+        }
+
+        .user-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-details p {
+            margin: 0;
+            font-size: 0.85rem;
+        }
+
+        .user-details .user-name {
+            color: var(--accent-blue);
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-details .user-status {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.15), rgba(255, 184, 0, 0.15));
+            border: 1.5px solid rgba(255, 71, 87, 0.4);
+            color: var(--text-light);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all var(--transition-normal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 71, 87, 0.25), rgba(255, 184, 0, 0.25));
+            border-color: rgba(255, 71, 87, 0.6);
+            color: var(--accent-red);
+            transform: translateY(-1px);
+        }
+
+        .logout-btn:active {
+            transform: translateY(0);
+        }
+
+        /* =====================================
+           MAIN CONTENT AREA
+        ===================================== */
+        .noc-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
+        }
+
+        .noc-header {
+            padding: 15px 30px;
+            background: linear-gradient(90deg, rgba(13, 143, 209, 0.08), rgba(0, 212, 170, 0.05));
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .noc-header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .noc-header-title {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .noc-header-title i {
+            color: var(--accent-blue);
+            font-size: 1.2rem;
+        }
+
+        .noc-header-time {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            background: rgba(0, 212, 170, 0.1);
+            padding: 8px 16px;
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(0, 212, 170, 0.3);
+        }
+
+        .noc-header-time i {
+            color: var(--accent-green);
+            font-size: 1rem;
+            animation: pulse-time 2s infinite;
+        }
+
+        @keyframes pulse-time {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .noc-main {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--spacing-lg);
+            position: relative;
+        }
+
+        /* Grid Background Pattern */
+        .noc-main::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(0deg, transparent 24%, rgba(13, 143, 209, 0.03) 25%, rgba(13, 143, 209, 0.03) 26%, transparent 27%, transparent 74%, rgba(13, 143, 209, 0.03) 75%, rgba(13, 143, 209, 0.03) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(13, 143, 209, 0.03) 25%, rgba(13, 143, 209, 0.03) 26%, transparent 27%, transparent 74%, rgba(13, 143, 209, 0.03) 75%, rgba(13, 143, 209, 0.03) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Content Wrapper */
+        .noc-content-wrapper {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* =====================================
+           SCROLLBAR STYLING
+        ===================================== */
+        .noc-sidebar::-webkit-scrollbar,
+        .noc-main::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .noc-sidebar::-webkit-scrollbar-track,
+        .noc-main::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .noc-sidebar::-webkit-scrollbar-thumb,
+        .noc-main::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        .noc-sidebar::-webkit-scrollbar-thumb:hover,
+        .noc-main::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        /* =====================================
+           COMPONENTES REUTILIZABLES
+        ===================================== */
+
+        /* Dashboard Header */
+        .dashboard-header {
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .dashboard-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-light);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 0;
+        }
+
+        .dashboard-title i {
+            color: var(--accent-blue);
+            font-size: 2.2rem;
+        }
+
+        /* Cards */
+        .noc-card {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-hover));
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .noc-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-blue);
+        }
+
+        .noc-card-header {
+            background: linear-gradient(135deg, rgba(13, 143, 209, 0.2), rgba(0, 212, 170, 0.1));
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            margin: calc(var(--spacing-md) * -1) calc(var(--spacing-md) * -1) var(--spacing-md);
+        }
+
+        .noc-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Stats Grid & Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-hover));
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-normal);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), transparent);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-blue);
+        }
+
+        .stat-card.success { --card-color: var(--accent-green); }
+        .stat-card.warning { --card-color: var(--accent-yellow); }
+        .stat-card.info { --card-color: var(--accent-blue); }
+        .stat-card.danger { --card-color: var(--accent-red); }
+
+        .stat-card.success::before { background: linear-gradient(90deg, var(--accent-green), transparent); }
+        .stat-card.warning::before { background: linear-gradient(90deg, var(--accent-yellow), transparent); }
+        .stat-card.info::before { background: linear-gradient(90deg, var(--accent-blue), transparent); }
+        .stat-card.danger::before { background: linear-gradient(90deg, var(--accent-red), transparent); }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            color: var(--card-color);
+            margin-bottom: 15px;
+            text-shadow: 0 0 15px var(--card-color);
+        }
+
+        .stat-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--text-light);
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Botones */
+        .noc-btn {
+            padding: 10px 25px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .noc-btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            color: white;
+            border: 1px solid var(--accent-green);
+        }
+
+        .noc-btn-primary:hover {
+            background: linear-gradient(135deg, var(--accent-green), #00ffcc);
+            box-shadow: var(--shadow-green);
+            transform: translateY(-2px);
+        }
+
+        .noc-btn-secondary {
+            background: linear-gradient(135deg, var(--tertiary-dark), var(--secondary-dark));
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+        }
+
+        .noc-btn-secondary:hover {
+            background: linear-gradient(135deg, var(--secondary-dark), var(--tertiary-dark));
+            border-color: var(--accent-blue);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .noc-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Formularios */
+        .control-panel {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-hover));
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .control-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-input,
+        .noc-input {
+            padding: 10px 15px;
+            background: rgba(45, 52, 84, 0.5);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            transition: all var(--transition-normal);
+        }
+
+        .control-input:focus,
+        .noc-input:focus {
+            outline: none;
+            background: rgba(45, 52, 84, 0.7);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(13, 143, 209, 0.3);
+        }
+
+        .noc-textarea {
+            padding: 10px 15px;
+            background: rgba(45, 52, 84, 0.5);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-family: 'Courier New', monospace;
+            transition: all var(--transition-normal);
+            resize: vertical;
+        }
+
+        .noc-textarea:focus {
+            outline: none;
+            background: rgba(45, 52, 84, 0.7);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(13, 143, 209, 0.3);
+        }
+
+        /* Tablas */
+        .noc-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+
+        .noc-table thead {
+            background: linear-gradient(135deg, rgba(13, 143, 209, 0.3), rgba(0, 212, 170, 0.2));
+        }
+
+        .noc-table thead th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .noc-table tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: all var(--transition-fast);
+        }
+
+        .noc-table tbody tr:hover {
+            background: rgba(13, 143, 209, 0.1);
+        }
+
+        .noc-table tbody td {
+            padding: 12px 15px;
+            color: var(--text-light);
+        }
+
+        /* Badges */
+        .noc-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: var(--radius-xl);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .noc-badge-success {
+            background: rgba(0, 212, 170, 0.2);
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+        }
+
+        .noc-badge-danger {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--accent-red);
+            border: 1px solid var(--accent-red);
+        }
+
+        .noc-badge-warning {
+            background: rgba(255, 184, 0, 0.2);
+            color: var(--accent-yellow);
+            border: 1px solid var(--accent-yellow);
+        }
+
+        .noc-badge-info {
+            background: rgba(13, 143, 209, 0.2);
+            color: var(--accent-blue);
+            border: 1px solid var(--accent-blue);
+        }
+
+        /* Alertas */
+        .noc-alert {
+            padding: 15px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+
+        .noc-alert i {
+            font-size: 1.2rem;
+        }
+
+        .noc-alert-success {
+            background: rgba(0, 212, 170, 0.15);
+            border: 1px solid var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .noc-alert-danger {
+            background: rgba(255, 71, 87, 0.15);
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+        }
+
+        .noc-alert-warning {
+            background: rgba(255, 184, 0, 0.15);
+            border: 1px solid var(--accent-yellow);
+            color: var(--accent-yellow);
+        }
+
+        .noc-alert-info {
+            background: rgba(13, 143, 209, 0.15);
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        /* Ready State */
+        .ready-state {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(13, 143, 209, 0.1));
+            border: 2px dashed var(--accent-green);
+            border-radius: var(--radius-lg);
+            padding: 60px 30px;
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .ready-state-icon {
+            font-size: 3.5rem;
+            color: var(--accent-green);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+
+        .ready-state-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+
+        .ready-state-text {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* =====================================
+           UTILIDADES
+        ===================================== */
+        .text-primary { color: var(--accent-blue) !important; }
+        .text-success { color: var(--accent-green) !important; }
+        .text-danger { color: var(--accent-red) !important; }
+        .text-warning { color: var(--accent-yellow) !important; }
+        .text-muted { color: var(--text-muted) !important; }
+        .text-light { color: var(--text-light) !important; }
+
+        .fw-bold { font-weight: 700 !important; }
+        .fw-semibold { font-weight: 600 !important; }
+        .fw-normal { font-weight: 400 !important; }
+
+        .text-center { text-align: center !important; }
+        .d-flex { display: flex !important; }
+        .align-items-center { align-items: center !important; }
+        .justify-content-between { justify-content: space-between !important; }
+        .gap-2 { gap: var(--spacing-md) !important; }
+
+        .mb-2 { margin-bottom: var(--spacing-md) !important; }
+        .mb-3 { margin-bottom: var(--spacing-lg) !important; }
+        .mb-4 { margin-bottom: var(--spacing-xl) !important; }
+
+        .font-monospace { font-family: 'Courier New', monospace !important; }
+
+        /* =====================================
+           BOOTSTRAP OVERRIDES
+        ===================================== */
+        .card {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, rgba(13, 143, 209, 0.2), rgba(0, 212, 170, 0.1));
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .form-control, .form-select {
+            background: rgba(45, 52, 84, 0.5);
+            border: 1.5px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .form-control:focus, .form-select:focus {
+            background: rgba(45, 52, 84, 0.7);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(13, 143, 209, 0.3);
+            color: var(--text-light);
+        }
+
+        .form-label { color: var(--text-light); }
+        .table { color: var(--text-light); }
+        .table-striped tbody tr:nth-of-type(odd) { background: rgba(45, 52, 84, 0.3); }
+        .table-hover tbody tr:hover { background: rgba(13, 143, 209, 0.1); }
+
+        /* =====================================
+           RESPONSIVE
+        ===================================== */
+        @media (max-width: 768px) {
+            .noc-main {
+                padding: var(--spacing-md);
+            }
+
+            .dashboard-title {
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-panel {
+                flex-direction: column;
+            }
+
+            .control-group {
+                min-width: 100%;
+            }
+
+            .noc-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        {% block extra_css %}
+        /* Estilos adicionales específicos de cada página */
+        {% endblock %}
+    </style>
+</head>
+<body>
+    <div class="noc-container">
+        <!-- Sidebar -->
+        <div class="noc-sidebar" id="noc-sidebar">
+            <button class="toggle-sidebar-btn" id="toggle-sidebar" title="Minimizar/Expandir">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            <!-- Logo -->
+            <div class="noc-logo">
+                <h2>
+                    <i class="fas fa-network-wired"></i>
+                    <span>NOC MICOOPE</span>
+                </h2>
+            </div>
+
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>Sistema Operativo</span>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="noc-nav">
+                <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <div class="nav-section-title">
+                    <i class="fas fa-tools"></i> Herramientas
+                </div>
+
+                <a href="{% url 'csv_dashboard' %}" class="{% if request.resolver_match.url_name == 'csv_dashboard' %}active{% endif %}">
+                    <i class="fas fa-file-csv"></i>
+                    <span>Validador de Exportables</span>
+                </a>
+                <a href="{% url 'calendario_home' %}" class="{% if request.resolver_match.url_name == 'calendario_home' %}active{% endif %}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Calendario</span>
+                </a>
+                <a href="{% url 'tsm_home' %}" class="{% if request.resolver_match.url_name == 'tsm_home' %}active{% endif %}">
+                    <i class="fas fa-server"></i>
+                    <span>Checker TSM</span>
+                </a>
+                <a href="{% url 'tsm_monitor_dashboard' %}" class="{% if request.resolver_match.url_name == 'tsm_monitor_dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-display"></i>
+                    <span>Monitor TSM</span>
+                </a>
+                <a href="{% url 'iso_individual' %}" class="{% if request.resolver_match.url_name == 'iso_individual' %}active{% endif %}">
+                    <i class="fas fa-credit-card"></i>
+                    <span>ISO 8583 Parser</span>
+                </a>
+                <a href="{% url 'iso_masivo' %}" class="{% if request.resolver_match.url_name == 'iso_masivo' %}active{% endif %}">
+                    <i class="fas fa-credit-card"></i>
+                    <span>ISO 8583 Parser Masivo</span>
+                </a>
+                {% if user.is_superuser %}
+                    <div class="nav-section-title" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                        <i class="fas fa-shield-alt"></i> Administración
+                    </div>
+                    <a href="{% url 'admin_dashboard' %}" class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                        <i class="fas fa-cogs"></i>
+                        <span>Panel Control</span>
+                    </a>
+                {% endif %}
+            </nav>
+
+            <!-- User Section -->
+            <div class="noc-user-section">
+                <div class="user-info">
+                    <div class="user-avatar">{{ user.username|first|upper }}</div>
+                    <div class="user-details">
+                        <p class="user-name">{{ user.username }}</p>
+                        <p class="user-status">● En línea</p>
+                    </div>
+                </div>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="noc-content">
+            <!-- Header -->
+            <div class="noc-header">
+                <div class="noc-header-left">
+                    <div class="noc-header-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Sistema de Monitoreo y Control
+                    </div>
+                </div>
+                <div class="noc-header-time">
+                    <i class="fas fa-clock"></i>
+                    <span id="current-time"></span>
+                </div>
+            </div>
+
+            <!-- Main Area -->
+            <div class="noc-main">
+                <div class="noc-content-wrapper">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle Sidebar
+        const toggleBtn = document.getElementById('toggle-sidebar');
+        const sidebar = document.getElementById('noc-sidebar');
+
+        // Load sidebar state from localStorage
+        const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (sidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        }
+
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+            
+            // Update button icon
+            toggleBtn.innerHTML = isCollapsed 
+                ? '<i class="fas fa-chevron-right"></i>' 
+                : '<i class="fas fa-chevron-left"></i>';
+        });
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('current-time').textContent = timeString;
+        }
+        
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Mark active navigation link
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.noc-nav a').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+
+    {% block extra_js %}
+    <!-- Scripts adicionales específicos de cada página -->
+    {% endblock %}
+</body>
+</html>

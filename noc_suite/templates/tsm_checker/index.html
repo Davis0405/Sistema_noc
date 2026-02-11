@@ -1,0 +1,504 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-dark: #0a0e27;
+        --secondary-dark: #1a1f3a;
+        --accent-blue: #0d8fd1;
+        --accent-green: #00d4aa;
+        --accent-yellow: #ffb800;
+        --accent-red: #ff4757;
+        --text-light: #e8eef5;
+        --text-muted: #7f8ba4;
+        --border-color: #2d3454;
+    }
+
+    .tsm-checker-container {
+        padding: 40px 20px;
+    }
+
+    .tsm-header {
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    .tsm-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+    }
+
+    .tsm-title i {
+        font-size: 2.5rem;
+        color: var(--accent-blue);
+    }
+
+    .tsm-subtitle {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    .tsm-card {
+        background: linear-gradient(135deg, rgba(26, 31, 58, 0.8), rgba(45, 52, 84, 0.5));
+        border: 1.5px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(13, 143, 209, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .tsm-form-group {
+        margin-bottom: 30px;
+    }
+
+    .tsm-form-label {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--text-light);
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .period-selector {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+    }
+
+    .period-btn {
+        padding: 12px 28px;
+        background: rgba(45, 52, 84, 0.6);
+        border: 1.5px solid var(--border-color);
+        color: var(--text-light);
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
+
+    .period-btn:hover {
+        border-color: var(--accent-blue);
+        background: rgba(13, 143, 209, 0.2);
+        color: var(--accent-blue);
+    }
+
+    .period-btn.active {
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+        border-color: var(--accent-green);
+        color: white;
+        box-shadow: 0 0 20px rgba(13, 143, 209, 0.4);
+    }
+
+    .file-upload-wrapper {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .file-input-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 30px;
+        background: rgba(45, 52, 84, 0.4);
+        border: 2px dashed var(--border-color);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .file-input-label:hover {
+        border-color: var(--accent-blue);
+        background: rgba(13, 143, 209, 0.1);
+        color: var(--accent-blue);
+    }
+
+    .file-input-label.active {
+        border-color: var(--accent-green);
+        background: rgba(0, 212, 170, 0.1);
+        color: var(--accent-green);
+    }
+
+    #csv_file {
+        display: none;
+    }
+
+    .file-name {
+        color: var(--accent-green);
+        font-size: 0.9rem;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+        border: none;
+        color: white;
+        font-weight: 700;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .submit-btn:hover {
+        box-shadow: 0 0 30px rgba(13, 143, 209, 0.5);
+        transform: translateY(-2px);
+    }
+
+    .submit-btn:active {
+        transform: translateY(0);
+    }
+
+    .result-container {
+        margin-top: 40px;
+        animation: slideIn 0.5s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .status-badge {
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 25px;
+        border-left: 4px solid;
+    }
+
+    .status-complete {
+        background: rgba(0, 212, 170, 0.1);
+        border-left-color: var(--accent-green);
+    }
+
+    .status-incomplete {
+        background: rgba(255, 71, 87, 0.1);
+        border-left-color: var(--accent-red);
+    }
+
+    .status-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .status-complete .status-title {
+        color: var(--accent-green);
+    }
+
+    .status-incomplete .status-title {
+        color: var(--accent-red);
+    }
+
+    .status-count {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+
+    .missing-servers {
+        background: linear-gradient(135deg, rgba(26, 31, 58, 0.8), rgba(45, 52, 84, 0.5));
+        border: 1.5px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+
+    .missing-header {
+        background: linear-gradient(135deg, rgba(255, 71, 87, 0.2), rgba(255, 71, 87, 0.1));
+        padding: 15px 20px;
+        border-bottom: 1.5px solid var(--border-color);
+        font-weight: 700;
+        color: var(--accent-red);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .missing-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .missing-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .missing-item:last-child {
+        border-bottom: none;
+    }
+
+    .missing-item:hover {
+        background: rgba(45, 52, 84, 0.3);
+    }
+
+    .server-name {
+        color: var(--accent-red);
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .server-ip {
+        background: rgba(45, 52, 84, 0.6);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: var(--accent-blue);
+        border: 1px solid var(--border-color);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+        margin-top: 30px;
+    }
+
+    .reset-btn {
+        flex: 1;
+        padding: 12px;
+        background: rgba(45, 52, 84, 0.6);
+        border: 1.5px solid var(--border-color);
+        color: var(--text-light);
+        font-weight: 700;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .reset-btn:hover {
+        border-color: var(--accent-blue);
+        background: rgba(13, 143, 209, 0.1);
+        color: var(--accent-blue);
+    }
+
+    @media (max-width: 768px) {
+        .tsm-title {
+            font-size: 1.8rem;
+        }
+
+        .period-selector {
+            flex-direction: column;
+        }
+
+        .period-btn {
+            width: 100%;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="tsm-checker-container">
+    <div class="tsm-header">
+        <div class="tsm-title">
+            <i class="fas fa-server"></i>
+            TSM CHECKER
+        </div>
+        <div class="tsm-subtitle">MICOOPE-NOC</div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="tsm-card">
+                <div style="padding: 40px;">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Período Selector -->
+                        <div class="tsm-form-group">
+                            <label class="tsm-form-label">
+                                <i class="fas fa-clock" style="margin-right: 8px; color: var(--accent-blue);"></i>
+                                Seleccionar Período
+                            </label>
+                            <div class="period-selector">
+                                <input type="radio" name="period" value="AM" id="am" {% if period == 'AM' %}checked{% endif %} style="display: none;">
+                                <label for="am" class="period-btn {% if period == 'AM' %}active{% endif %}">AM</label>
+
+                                <input type="radio" name="period" value="PM" id="pm" {% if period == 'PM' %}checked{% endif %} style="display: none;">
+                                <label for="pm" class="period-btn {% if period == 'PM' %}active{% endif %}">PM</label>
+                            </div>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="tsm-form-group">
+                            <label class="tsm-form-label">
+                                <i class="fas fa-file-csv" style="margin-right: 8px; color: var(--accent-green);"></i>
+                                Cargar Archivo CSV
+                            </label>
+                            <div class="file-upload-wrapper">
+                                <label for="csv_file" class="file-input-label" id="fileLabel">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <span id="fileText">Arrastra el archivo o haz clic para seleccionar</span>
+                                </label>
+                                <input type="file" name="csv_file" id="csv_file" accept=".csv" required>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-search"></i>
+                            Analizar Archivo
+                        </button>
+                    </form>
+
+                    <!-- Results Section -->
+                    {% if result %}
+                        <div class="result-container">
+                            <!-- Status Badge -->
+                            <div class="status-badge {% if result.complete %}status-complete{% else %}status-incomplete{% endif %}">
+                                <div class="status-title">
+                                    {% if result.complete %}
+                                        <i class="fas fa-check-circle"></i>
+                                        <span>Análisis Completo</span>
+                                    {% else %}
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <span>Faltan Servidores</span>
+                                    {% endif %}
+                                </div>
+                                <div class="status-count">
+                                    <strong>{{ result.found_count }}</strong> de <strong>{{ result.total_expected }}</strong> servidores encontrados
+                                </div>
+                            </div>
+
+                            <!-- Missing Servers -->
+                            {% if not result.complete %}
+                                <div class="missing-servers">
+                                    <div class="missing-header">
+                                        <i class="fas fa-server"></i>
+                                        <span>Servidores Faltantes ({{ result.missing|length }})</span>
+                                    </div>
+                                    <ul class="missing-list">
+                                        {% for server in result.missing %}
+                                        <li class="missing-item">
+                                            <span class="server-name">{{ server.name }}</span>
+                                            <span class="server-ip">{{ server.ip }}</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+
+                            <!-- Action Buttons -->
+                            <div class="action-buttons">
+                                <a href="{% url 'tsm_home' %}" class="reset-btn">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Nueva Búsqueda
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Period selector interactivity
+    const periodBtns = document.querySelectorAll('.period-btn');
+    const periodInputs = document.querySelectorAll('input[name="period"]');
+
+    periodBtns.forEach((btn, index) => {
+        btn.addEventListener('click', () => {
+            periodBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            periodInputs[index].checked = true;
+        });
+    });
+
+    // File upload drag and drop
+    const fileLabel = document.getElementById('fileLabel');
+    const fileInput = document.getElementById('csv_file');
+    const fileText = document.getElementById('fileText');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        fileLabel.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        fileLabel.addEventListener(eventName, () => {
+            fileLabel.classList.add('active');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        fileLabel.addEventListener(eventName, () => {
+            fileLabel.classList.remove('active');
+        });
+    });
+
+    fileLabel.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        updateFileName();
+    });
+
+    fileInput.addEventListener('change', updateFileName);
+
+    function updateFileName() {
+        if (fileInput.files.length > 0) {
+            fileText.innerHTML = `<i class="fas fa-check-circle" style="color: var(--accent-green);"></i> ${fileInput.files[0].name}`;
+            fileLabel.classList.add('active');
+        } else {
+            fileText.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Arrastra el archivo o haz clic para seleccionar';
+            fileLabel.classList.remove('active');
+        }
+    }
+</script>
+{% endblock %}
